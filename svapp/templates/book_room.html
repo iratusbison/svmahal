@@ -1,6 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+{% extends "core/dashboard.html" %}
+{% block dashboard_styles %}
     <meta charset="UTF-8">
     <title>Book Room</title>
     <style>
@@ -55,8 +54,9 @@
             background-color: #2980b9;
         }
     </style>
-</head>
-<body>
+{% endblock dashboard_styles %}
+{% block dashboard_content %}
+
     <h1>Book Room - {{ room.room_number }}</h1>
     <form method="post">
         {% csrf_token %}
@@ -81,7 +81,8 @@
         <label for="price">Price:</label>
         <input type="number" name="price" min="0">
 
+
         <button type="submit">Book Now</button>
     </form>
-</body>
-</html>
+
+    {% endblock dashboard_content %}

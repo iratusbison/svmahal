@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking List</title>
+</head>
+<body>
+    <h1>Booking List</h1>
+    <ul>
+        {% for booking in bookings %}
+            <li>
+                Name: {{ booking.name }} | 
+                Check-in Date: {{ booking.checkin_date }} | 
+                Check-out Date: {{ booking.checkout_date }} | 
+                <a href="{% url 'booking_detail' booking.id %}">View Details</a>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

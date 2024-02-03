@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Detail</title>
+</head>
+<body>
+    <h1>Booking Detail</h1>
+    <p>Name: {{ booking.name }}</p>
+    <p>Address: {{ booking.address }}</p>
+    <p>Phone: {{ booking.phone }}</p>
+    <p>Aadhar: {{ booking.aadhar }}</p>
+    <p>Price: {{ booking.price }}</p>
+
+    <!-- Display GST details if available -->
+    {% if booking.gst %}
+        <p>GST: {{ booking.gst }}</p>
+    {% endif %}
+    
+    <p>Check-in Date: {{ booking.checkin_date }}</p>
+    <p>Check-out Date: {{ booking.checkout_date }}</p>
+
+    <a href="{% url 'edit_booking' booking.id %}">Edit</a>
+    <a href="{% url 'delete_booking' booking.id %}">Delete</a>
+    <a href="{% url 'generate_bill' booking.id %}">Generate Bill</a>
+</body>
+</html>

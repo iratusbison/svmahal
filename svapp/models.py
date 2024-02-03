@@ -20,6 +20,5 @@ class Booking(models.Model):
     checkout_date = models.DateField()
 
    
-
     def __str__(self):
         return f"Booking for {self.room.room_number}"

@@ -38,8 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'svapp',
-    'usermanager',
-    'bisonapp',
+    #'usermanager',
+    #'bisonapp',
 ]
 
 MIDDLEWARE = [
