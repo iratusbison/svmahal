@@ -1,7 +1,7 @@
 import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Room, Booking
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from reportlab.lib.pagesizes import letter, A4
 from django.http import HttpResponse
@@ -228,3 +228,43 @@ def generate_bill(request, booking_id):
     response = HttpResponse(pdf, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="booking_bill_{booking.id}.pdf"'
     return response
+
+from django.db.models import Sum
+from decimal import Decimal
+
+def total_revenue(request):
+    # Get current date
+    current_date = datetime.now()
+
+    # Calculate start and end dates for week, month, and year
+    week_start_date = current_date - timedelta(days=current_date.weekday())
+    week_end_date = week_start_date + timedelta(days=6)
+
+    month_start_date = current_date.replace(day=1)
+    next_month = current_date.replace(day=28) + timedelta(days=4)
+    month_end_date = next_month - timedelta(days=next_month.day)
+
+    year_start_date = current_date.replace(month=1, day=1)
+    year_end_date = current_date.replace(month=12, day=31)
+
+    # Calculate total revenue for the week, month, and year
+    bookings_week = Booking.objects.filter(
+        checkout_datetime__range=[week_start_date, week_end_date]
+    )
+    total_revenue_week = sum(booking.price for booking in bookings_week)
+
+    bookings_month = Booking.objects.filter(
+        checkout_datetime__range=[month_start_date, month_end_date]
+    )
+    total_revenue_month = sum(booking.price for booking in bookings_month)
+
+    bookings_year = Booking.objects.filter(
+        checkout_datetime__range=[year_start_date, year_end_date]
+    )
+    total_revenue_year = sum(booking.price for booking in bookings_year)
+
+    return render(request, 'total_revenue.html', {
+        'total_revenue_week': total_revenue_week,
+        'total_revenue_month': total_revenue_month,
+        'total_revenue_year': total_revenue_year,
+    })
