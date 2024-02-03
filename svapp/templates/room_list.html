@@ -71,9 +71,11 @@
                     <span class="available">Available</span>
                     <a class="book-now-btn" href="{% url 'book_room' room.id %}">Book Now</a>
                 {% else %}
-                    <span class="booked">Booked until {{ room.booking.checkout_date }}</span>
-                    <!-- Pass the booking ID to the edit_booking URL -->
-                    <a class="book-now-btn" href="{% url 'edit_booking' room.booking.id %}">Edit Booking</a>
+                    <span class="booked">Booked until {{ room.booking.checkout_datetime }}</span>
+                    <!-- Only generate the Edit Booking link if there's a booking -->
+                    {% if room.booking %}
+                        <a class="book-now-btn" href="{% url 'edit_booking' room.booking.id %}">Edit Booking</a>
+                    {% endif %}
                 {% endif %}
             </li>
         {% endfor %}

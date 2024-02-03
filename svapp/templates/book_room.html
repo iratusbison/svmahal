@@ -1,5 +1,4 @@
-{% extends "core/dashboard.html" %}
-{% block dashboard_styles %}
+
     <meta charset="UTF-8">
     <title>Book Room</title>
     <style>
@@ -54,18 +53,17 @@
             background-color: #2980b9;
         }
     </style>
-{% endblock dashboard_styles %}
-{% block dashboard_content %}
 
     <h1>Book Room - {{ room.room_number }}</h1>
     <form method="post">
         {% csrf_token %}
-        <label for="checkin_date">Check-in Date:</label>
-        <input type="date" name="checkin_date" required>
+        <label for="checkin_datetime">Check-in Date and Time:</label>
+        <input type="datetime-local" name="checkin_datetime" required>
 
-        <label for="checkout_date">Check-out Date:</label>
-        <input type="date" name="checkout_date" required>
+        <label for="checkout_datetime">Check-out Date and Time:</label>
+        <input type="datetime-local" name="checkout_datetime" required>
 
+        
         <label for="name">Name:</label>
         <input type="text" name="name">
 
@@ -84,5 +82,3 @@
 
         <button type="submit">Book Now</button>
     </form>
-
-    {% endblock dashboard_content %}

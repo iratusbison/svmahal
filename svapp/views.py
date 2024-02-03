@@ -1,6 +1,7 @@
+import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Room, Booking
-from datetime import date
+from datetime import datetime
 from decimal import Decimal
 from reportlab.lib.pagesizes import letter, A4
 from django.http import HttpResponse
@@ -12,7 +13,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet
 
 
-
+'''
 def room_list(request):
     rooms = Room.objects.all()
     today = date.today()
@@ -25,14 +26,27 @@ def room_list(request):
             room.is_available = True
             room.booking = None
     return render(request, 'room_list.html', {'rooms': rooms, 'today': today})
+'''
+def room_list(request):
+    rooms = Room.objects.all()
+    now = datetime.now()
+    for room in rooms:
+        bookings = Booking.objects.filter(room=room, checkout_datetime__gte=now)
+        if bookings.exists():
+            room.is_available = False
+            room.booking = bookings.first()
+        else:
+            room.is_available = True
+            room.booking = None
+    return render(request, 'room_list.html', {'rooms': rooms, 'now': now})
 
 
 
 def book_room(request, room_id):
     if request.method == 'POST':
         room = Room.objects.get(id=room_id)
-        checkin_date = request.POST.get('checkin_date')
-        checkout_date = request.POST.get('checkout_date')
+        checkin_datetime = request.POST.get('checkin_datetime')  # Update field name
+        checkout_datetime = request.POST.get('checkout_datetime')  # Update field name
         name = request.POST.get('name')
         address = request.POST.get('address')
         phone = request.POST.get('phone')
@@ -46,8 +60,8 @@ def book_room(request, room_id):
             phone=phone,
             aadhar=aadhar,
             price=price,
-            checkin_date=checkin_date,
-            checkout_date=checkout_date
+            checkin_datetime=checkin_datetime,  # Updated field name
+            checkout_datetime=checkout_datetime  # Updated field name
         )
 
         room.is_available = False
@@ -57,11 +71,12 @@ def book_room(request, room_id):
         room = Room.objects.get(id=room_id)
         return render(request, 'book_room.html', {'room': room})
 
+
 def edit_booking(request, booking_id):
     booking = Booking.objects.get(id=booking_id)
     if request.method == 'POST':
-        booking.checkin_date = request.POST.get('checkin_date')
-        booking.checkout_date = request.POST.get('checkout_date')
+        booking.checkin_datetime = request.POST.get('checkin_datetime')
+        booking.checkout_datetime = request.POST.get('checkout_datetime')
         booking.name = request.POST.get('name')
         booking.address = request.POST.get('address')
         booking.phone = request.POST.get('phone')
@@ -72,6 +87,7 @@ def edit_booking(request, booking_id):
         return redirect('room_list')
     else:
         return render(request, 'edit_booking.html', {'booking': booking})
+
 
 def delete_booking(request, booking_id):
     booking = Booking.objects.get(id=booking_id)
@@ -183,8 +199,8 @@ def generate_bill(request, booking_id):
         ["Price", str(price)],
         ["GST", str(gst)],
         ["Total Price", str(total_price)],
-        ["Check-in Date", str(booking.checkin_date)],
-        ["Check-out Date", str(booking.checkout_date)],
+        ["Check-in Date", str(booking.checkin_datetime)],
+        ["Check-out Date", str(booking.checkout_datetime)],
     ]
 
     # Create the table

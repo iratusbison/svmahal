@@ -16,8 +16,8 @@ class Booking(models.Model):
     phone = models.BigIntegerField(null=True)
     aadhar = models.BigIntegerField(null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
-    checkin_date = models.DateField()
-    checkout_date = models.DateField()
+    checkin_datetime = models.DateTimeField(null=True)  
+    checkout_datetime = models.DateTimeField(null=True)
 
    
     def __str__(self):

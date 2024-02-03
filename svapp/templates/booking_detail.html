@@ -21,8 +21,8 @@
 
     
 
-    <p>Check-in Date: {{ booking.checkin_date }}</p>
-    <p>Check-out Date: {{ booking.checkout_date }}</p>
+    <p>Check-in Date and Time: {{ booking.checkin_datetime }}</p>
+    <p>Check-out Date and Time: {{ booking.checkout_datetime }}</p>
 
     <a href="{% url 'edit_booking' booking.id %}">Edit</a>
     <a href="{% url 'delete_booking' booking.id %}">Delete</a>
