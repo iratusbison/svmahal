@@ -13,12 +13,14 @@
     <p>Phone: {{ booking.phone }}</p>
     <p>Aadhar: {{ booking.aadhar }}</p>
     <p>Price: {{ booking.price }}</p>
-
-    <!-- Display GST details if available -->
-    {% if booking.gst %}
-        <p>GST: {{ booking.gst }}</p>
+    <!-- Display GST and Total Price -->
+    {% if price and gst and total_price %}
+        <p>GST (18%): {{ gst }}</p>
+        <p>Total Price (including GST): {{ total_price }}</p>
     {% endif %}
+
     
+
     <p>Check-in Date: {{ booking.checkin_date }}</p>
     <p>Check-out Date: {{ booking.checkout_date }}</p>
 

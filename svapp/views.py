@@ -1,17 +1,17 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Room, Booking
 from datetime import date
-
+from decimal import Decimal
+from reportlab.lib.pagesizes import letter, A4
 from django.http import HttpResponse
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
-from io import BytesIO
-
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
+from io import BytesIO
+from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet
+
+
 
 def room_list(request):
     rooms = Room.objects.all()
@@ -81,19 +81,15 @@ def delete_booking(request, booking_id):
     booking.delete()
     return redirect('room_list')
 
+
+
 def booking_detail(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
-    return render(request, 'booking_detail.html', {'booking': booking})
+    price = booking.price
+    gst = price * Decimal('0.18')
+    total_price = price + gst
 
-def calculate_gst(request):
-    if request.method == 'POST':
-        price = request.POST.get('price')
-        if price:
-            price = float(price)
-            gst = price * 0.18
-            total_price = price + gst
-            return render(request, 'booking_detail.html', {'price': price, 'gst': gst, 'total_price': total_price})
-    return render(request, 'booking_detail.html')
+    return render(request, 'booking_detail.html', {'booking': booking, 'price': price, 'gst': gst, 'total_price': total_price})
 
 
 def booking_list(request):
@@ -109,17 +105,22 @@ def generate_pdf(request):
     elements = []
 
     # Define data for the table
-    data = [['Name', 'Address', 'Phone', 'Aadhar', 'Price', 'Check-in Date', 'Check-out Date']]
+    data = [['Name', 'Address', 'Phone', 'Aadhar', 'Price', 'gst', 'total_price']]
 
     for booking in bookings:
+        price = booking.price
+        gst = price * Decimal('0.18')
+        total_price = price + gst
+
         data.append([
             booking.name,
             booking.address,
             booking.phone,
             booking.aadhar,
-            booking.price,
-            booking.checkin_date,
-            booking.checkout_date
+            price,
+            gst,
+            total_price
+            
         ])
 
     # Create the table
@@ -151,6 +152,11 @@ def generate_bill(request, booking_id):
     # Retrieve booking object
     booking = get_object_or_404(Booking, id=booking_id)
 
+    # Calculate GST and total price
+    price = booking.price
+    gst = price * Decimal('0.18')
+    total_price = price + gst
+
     # Create a buffer for the PDF
     buffer = BytesIO()
 
@@ -173,7 +179,9 @@ def generate_bill(request, booking_id):
         ["Address", booking.address],
         ["Phone", booking.phone],
         ["Aadhar", booking.aadhar],
-        ["Price", str(booking.price)],
+        ["Price", str(price)],
+        ["GST", str(gst)],
+        ["Total Price", str(total_price)],
         ["Check-in Date", str(booking.checkin_date)],
         ["Check-out Date", str(booking.checkout_date)],
     ]
