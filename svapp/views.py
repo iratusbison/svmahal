@@ -170,6 +170,7 @@ def generate_bill(request, booking_id):
 
     # Add title to the bill
     elements.append(Paragraph("Booking Bill", styles["Title"]))
+    elements.append(Paragraph("SV Mahal", styles["Title"]))
     elements.append(Paragraph("<br/><br/>", normal_style))  # Add some space
 
     # Create data for the table
