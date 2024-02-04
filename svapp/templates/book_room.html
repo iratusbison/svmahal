@@ -1,5 +1,8 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Room</title>
     <style>
         body {
@@ -12,6 +15,7 @@
 
         h1 {
             color: #3498db;
+            text-align: center;
         }
 
         form {
@@ -29,7 +33,7 @@
             color: #333;
         }
 
-        input {
+        input, select {
             width: 100%;
             padding: 8px;
             margin-bottom: 15px;
@@ -47,13 +51,15 @@
             border-radius: 3px;
             cursor: pointer;
             font-size: 16px;
+            width: 100%;
         }
 
         button:hover {
             background-color: #2980b9;
         }
     </style>
-
+</head>
+<body>
     <h1>Book Room - {{ room.room_number }}</h1>
     <form method="post">
         {% csrf_token %}
@@ -63,7 +69,6 @@
         <label for="checkout_datetime">Check-out Date and Time:</label>
         <input type="datetime-local" name="checkout_datetime" required>
 
-        
         <label for="name">Name:</label>
         <input type="text" name="name">
 
@@ -79,6 +84,7 @@
         <label for="price">Price:</label>
         <input type="number" name="price" min="0">
 
-
         <button type="submit">Book Now</button>
     </form>
+</body>
+</html>

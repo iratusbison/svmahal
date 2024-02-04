@@ -5,27 +5,101 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Booking Detail</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            color: #3498db;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        p {
+            font-size: 1.2em;
+            margin-top: 10px;
+        }
+
+        .booking-info {
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            transition: box-shadow 0.3s;
+        }
+
+        .booking-info:hover {
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .icon {
+            font-size: 2em;
+            margin-right: 10px;
+        }
+
+        .edit-icon {
+            color: #3498db;
+        }
+
+        .delete-icon {
+            color: #e74c3c;
+        }
+
+        .generate-bill-icon {
+            color: #27ae60;
+        }
+
+        a {
+            text-decoration: none;
+            color: #3498db;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+
+        .action-btn {
+            background-color: #3498db;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .action-btn:hover {
+            background-color: #2980b9;
+        }
+    </style>
 </head>
 <body>
-    <h1>Booking Detail</h1>
-    <p>Name: {{ booking.name }}</p>
-    <p>Address: {{ booking.address }}</p>
-    <p>Phone: {{ booking.phone }}</p>
-    <p>Aadhar: {{ booking.aadhar }}</p>
-    <p>Price: {{ booking.price }}</p>
-    <!-- Display GST and Total Price -->
-    {% if price and gst and total_price %}
-        <p>GST (18%): {{ gst }}</p>
-        <p>Total Price (including GST): {{ total_price }}</p>
-    {% endif %}
+    <div class="booking-info">
+        <h1>Booking Detail</h1>
+        <p>Name: {{ booking.name }}</p>
+        <p>Address: {{ booking.address }}</p>
+        <p>Phone: {{ booking.phone }}</p>
+        <p>Aadhar: {{ booking.aadhar }}</p>
+        <p>Price: {{ booking.price }}</p>
 
-    
+        <!-- Display GST and Total Price -->
+        {% if price and gst and total_price %}
+            <p>GST (18%): {{ gst }}</p>
+            <p>Total Price (including GST): {{ total_price }}</p>
+        {% endif %}
 
-    <p>Check-in Date and Time: {{ booking.checkin_datetime }}</p>
-    <p>Check-out Date and Time: {{ booking.checkout_datetime }}</p>
+        <p>Check-in Date and Time: {{ booking.checkin_datetime }}</p>
+        <p>Check-out Date and Time: {{ booking.checkout_datetime }}</p>
 
-    <a href="{% url 'edit_booking' booking.id %}">Edit</a>
-    <a href="{% url 'delete_booking' booking.id %}">Delete</a>
-    <a href="{% url 'generate_bill' booking.id %}">Generate Bill</a>
+        <a href="{% url 'edit_booking' booking.id %}" class="action-btn"><i class="icon edit-icon fas fa-edit"></i>Edit</a>
+        <a href="{% url 'delete_booking' booking.id %}" class="action-btn"><i class="icon delete-icon fas fa-trash"></i>Delete</a>
+        <a href="{% url 'generate_bill' booking.id %}" class="action-btn"><i class="icon generate-bill-icon fas fa-file-invoice"></i>Generate Bill</a>
+    </div>
 </body>
 </html>

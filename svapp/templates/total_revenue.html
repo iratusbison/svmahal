@@ -5,17 +5,104 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Total Revenue</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            color: #3498db;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        h2 {
+            color: #3498db;
+        }
+
+        p {
+            font-size: 1.2em;
+            margin-top: 10px;
+        }
+
+        .total-revenue {
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            transition: box-shadow 0.3s;
+        }
+
+        .total-revenue:hover {
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .icon {
+            font-size: 3em;
+            margin-right: 10px;
+        }
+
+        .week-icon {
+            color: #27ae60;
+        }
+
+        .month-icon {
+            color: #f39c12;
+        }
+
+        .year-icon {
+            color: #e74c3c;
+        }
+
+        a {
+            text-decoration: none;
+            color: #3498db;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+
+        .book-now-btn {
+            background-color: #3498db;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .book-now-btn:hover {
+            background-color: #2980b9;
+        }
+    </style>
 </head>
 <body>
-    <h1>Total Revenue</h1>
+    <div class="total-revenue">
+        <h1>Total Revenue</h1>
 
-    <h2>Week</h2>
-    <p>Total Revenue for the Week: ${{ total_revenue_week }}</p>
+        <div>
+            <h2><i class="icon week-icon fas fa-calendar-week"></i> Week</h2>
+            <p>Total Revenue for the Week: ${{ total_revenue_week }}</p>
+        </div>
 
-    <h2>Month</h2>
-    <p>Total Revenue for the Month: ${{ total_revenue_month }}</p>
+        <div>
+            <h2><i class="icon month-icon fas fa-calendar-alt"></i> Month</h2>
+            <p>Total Revenue for the Month: ${{ total_revenue_month }}</p>
+        </div>
 
-    <h2>Year</h2>
-    <p>Total Revenue for the Year: ${{ total_revenue_year }}</p>
+        <div>
+            <h2><i class="icon year-icon fas fa-calendar"></i> Year</h2>
+            <p>Total Revenue for the Year: ${{ total_revenue_year }}</p>
+        </div>
+    </div>
+
+    <a href="#" class="book-now-btn">Book Now</a>
 </body>
 </html>
