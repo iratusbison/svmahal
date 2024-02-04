@@ -80,7 +80,9 @@
             </li>
         {% endfor %}
     </ul>
-    <a href="{% url 'booking_list' %}">Booking Details</a>
-    <a href="{% url 'generate_pdf' %}">Download Booking List as PDF</a>
+    <a class="book-now-btn" href="{% url 'booking_list' %}">Booking Details</a>
+    <a class="book-now-btn" href="{% url 'generate_pdf' %}">Download Booking List as PDF</a>
+    <a class="book-now-btn" href="{% url 'total_revenue' %}">Total Revenue</a>
+    <a class="book-now-btn" href="{% url 'add_room' %}">Add Rooms</a>
 </body>
 </html>

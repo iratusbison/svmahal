@@ -13,6 +13,25 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet
 
 
+
+def add_room(request):
+    if request.method == 'POST':
+        room_number = request.POST.get('room_number')
+        
+
+        # Create a new Room object and save it to the database
+        Room.objects.create(
+            room_number=room_number,
+            
+        )
+        
+        # Redirect to the room list page after adding the room
+        return redirect('room_list')  # Assuming you have a URL named 'room_list'
+   
+        
+    return render(request, 'room_add.html')
+
+
 '''
 def room_list(request):
     rooms = Room.objects.all()
