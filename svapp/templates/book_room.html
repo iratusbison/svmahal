@@ -1,90 +1,51 @@
+<!-- book_room.html -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Room</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
-
-        h1 {
-            color: #3498db;
-            text-align: center;
-        }
-
-        form {
-            max-width: 400px;
-            margin: 20px auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 15px;
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            font-size: 14px;
-        }
-
-        button {
-            background-color: #3498db;
-            color: #fff;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 16px;
-            width: 100%;
-        }
-
-        button:hover {
-            background-color: #2980b9;
-        }
-    </style>
 </head>
 <body>
-    <h1>Book Room - {{ room.room_number }}</h1>
-    <form method="post">
+    <h1>Book Room</h1>
+    {% if error %}
+      <div class="alert alert-danger" role="alert">
+        {{ error }}
+      </div>
+   {% endif %}
+    <form method="POST">
         {% csrf_token %}
         <label for="checkin_datetime">Check-in Date and Time:</label>
-        <input type="datetime-local" name="checkin_datetime" required>
+        <input type="datetime-local" id="checkin_datetime" name="checkin_datetime" required><br><br>
 
         <label for="checkout_datetime">Check-out Date and Time:</label>
-        <input type="datetime-local" name="checkout_datetime" required>
+        <input type="datetime-local" id="checkout_datetime" name="checkout_datetime" required><br><br>
 
         <label for="name">Name:</label>
-        <input type="text" name="name">
+        <input type="text" id="name" name="name" required><br><br>
 
         <label for="address">Address:</label>
-        <input type="text" name="address">
+        <input type="text" id="address" name="address" required><br><br>
 
         <label for="phone">Phone:</label>
-        <input type="tel" name="phone">
+        <input type="tel" id="phone" name="phone" required><br><br>
 
         <label for="aadhar">Aadhar:</label>
-        <input type="text" name="aadhar">
+        <input type="number" id="aadhar" name="aadhar" required><br><br>
 
         <label for="price">Price:</label>
-        <input type="number" name="price" min="0">
+        <input type="number" id="price" name="price" required><br><br>
 
-        <button type="submit">Book Now</button>
+        <label for="rooms">Select Room(s):</label><br>
+        {% for room in rooms %}
+        <input type="checkbox" id="room_{{ room.id }}" name="rooms" value="{{ room.id }}">
+        <label for="room_{{ room.id }}">{{ room.room_number }}</label><br>
+        {% endfor %}
+
+        <br>
+
+        <button type="submit">Book</button>
     </form>
 </body>
 </html>

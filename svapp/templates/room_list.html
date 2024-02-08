@@ -66,10 +66,10 @@
     <ul>
         {% for room in rooms %}
             <li>
-                {{ room.room_number }} - 
+                {{ room.room_number }} -
                 {% if room.is_available %}
                     <span class="available">Available</span>
-                    <a class="book-now-btn" href="{% url 'book_room' room.id %}">Book Now</a>
+
                 {% else %}
                     <span class="booked">Booked until {{ room.booking.checkout_datetime }}</span>
                     <!-- Only generate the Edit Booking link if there's a booking -->
@@ -80,9 +80,10 @@
             </li>
         {% endfor %}
     </ul>
+    <a class="book-now-btn" href="{% url 'book_room' %}">Book Now</a>
     <a class="book-now-btn" href="{% url 'booking_list' %}">Booking Details</a>
     <a class="book-now-btn" href="{% url 'generate_pdf' %}">Download Booking List as PDF</a>
-    <a class="book-now-btn" href="{% url 'total_revenue' %}">Total Revenue</a>
+
     <a class="book-now-btn" href="{% url 'add_room' %}">Add Rooms</a>
 </body>
 </html>

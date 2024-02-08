@@ -2,6 +2,10 @@ import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Room, Booking
 from datetime import datetime, timedelta
+
+from django.db.models import Sum
+
+
 from decimal import Decimal
 from reportlab.lib.pagesizes import letter, A4
 from django.http import HttpResponse
@@ -12,45 +16,35 @@ from io import BytesIO
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet
 
+from django.utils import timezone
+
+from django.utils.timezone import make_aware
 
 
 def add_room(request):
     if request.method == 'POST':
         room_number = request.POST.get('room_number')
-        
+
 
         # Create a new Room object and save it to the database
         Room.objects.create(
             room_number=room_number,
-            
+
         )
-        
+
         # Redirect to the room list page after adding the room
         return redirect('room_list')  # Assuming you have a URL named 'room_list'
-   
-        
+
+
     return render(request, 'room_add.html')
 
 
-'''
+
 def room_list(request):
     rooms = Room.objects.all()
-    today = date.today()
+    now = timezone.now()
     for room in rooms:
-        bookings = Booking.objects.filter(room=room, checkout_date__gte=today)
-        if bookings.exists():
-            room.is_available = False
-            room.booking = bookings.first()
-        else:
-            room.is_available = True
-            room.booking = None
-    return render(request, 'room_list.html', {'rooms': rooms, 'today': today})
-'''
-def room_list(request):
-    rooms = Room.objects.all()
-    now = datetime.now()
-    for room in rooms:
-        bookings = Booking.objects.filter(room=room, checkout_datetime__gte=now)
+        bookings = Booking.objects.filter(rooms=room, checkout_datetime__gte=now)
         if bookings.exists():
             room.is_available = False
             room.booking = bookings.first()
@@ -61,35 +55,78 @@ def room_list(request):
 
 
 
-def book_room(request, room_id):
+
+from django.core.exceptions import ValidationError
+
+def book_room(request):
+    rooms = Room.objects.all()
+
     if request.method == 'POST':
-        room = Room.objects.get(id=room_id)
-        checkin_datetime = request.POST.get('checkin_datetime')  # Update field name
-        checkout_datetime = request.POST.get('checkout_datetime')  # Update field name
+        room_ids = request.POST.getlist('rooms')  # Get selected room IDs from the form
+        checkin_datetime = request.POST.get('checkin_datetime')
+        checkout_datetime = request.POST.get('checkout_datetime')
         name = request.POST.get('name')
         address = request.POST.get('address')
         phone = request.POST.get('phone')
         aadhar = request.POST.get('aadhar')
         price = request.POST.get('price')
 
-        booking = Booking.objects.create(
-            room=room,
-            name=name,
-            address=address,
-            phone=phone,
-            aadhar=aadhar,
-            price=price,
-            checkin_datetime=checkin_datetime,  # Updated field name
-            checkout_datetime=checkout_datetime  # Updated field name
-        )
+        # Validate if the end date is not earlier than the start date
+        if checkout_datetime <= checkin_datetime:
+            error_message = 'Invalid date range'
+            return render(request, 'book_room.html', {'rooms': rooms, 'error': error_message})
 
-        room.is_available = False
-        room.save()
-        return redirect('room_list')
+        # Initialize booking_id
+        booking_id = None
+
+        # Iterate through selected rooms and perform booking validation
+        for room_id in room_ids:
+            room = Room.objects.get(id=room_id)
+
+            # Check if the room is already booked for the given date range
+            existing_bookings = Booking.objects.filter(rooms=room, checkout_datetime__gte=checkin_datetime, checkin_datetime__lte=checkout_datetime)
+            if existing_bookings.exists():
+                error_message = f'Room {room.room_number} is already booked for the selected date range'
+                return render(request, 'book_room.html', {'rooms': rooms, 'error': error_message})
+
+            # Create a new booking for each selected room
+            try:
+                booking = Booking.objects.create(
+                    name=name,
+                    address=address,
+                    phone=phone,
+                    aadhar=aadhar,
+                    price=price,
+                    checkin_datetime=checkin_datetime,
+                    checkout_datetime=checkout_datetime
+                )
+                booking.rooms.add(room)  # Add the room to the booking
+
+                # Set the room's availability to False
+                room.is_available = False
+                room.save()
+
+                # Assign the booking_id
+                booking_id = booking.id
+
+            except ValidationError as e:
+                error_message = str(e)
+                return render(request, 'book_room.html', {'rooms': rooms, 'error': error_message})
+
+        # Redirect to booking_detail with the obtained booking_id
+        return redirect('booking_detail', booking_id=booking_id)
+
     else:
-        room = Room.objects.get(id=room_id)
-        return render(request, 'book_room.html', {'room': room})
+        return render(request, 'book_room.html', {'rooms': rooms})
 
+
+def booking_detail(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id)
+    price = booking.price
+    gst = price * Decimal('0.12')
+    total_price = price + gst
+
+    return render(request, 'booking_detail.html', {'booking': booking, 'price': price, 'gst': gst, 'total_price': total_price})
 
 def edit_booking(request, booking_id):
     booking = Booking.objects.get(id=booking_id)
@@ -103,7 +140,7 @@ def edit_booking(request, booking_id):
         booking.price = request.POST.get('price')
 
         booking.save()
-        return redirect('room_list')
+        return redirect('booking_detail', booking_id=booking_id)
     else:
         return render(request, 'edit_booking.html', {'booking': booking})
 
@@ -118,58 +155,99 @@ def delete_booking(request, booking_id):
 
 
 
-def booking_detail(request, booking_id):
-    booking = get_object_or_404(Booking, id=booking_id)
-    price = booking.price
-    gst = price * Decimal('0.18')
-    total_price = price + gst
-
-    return render(request, 'booking_detail.html', {'booking': booking, 'price': price, 'gst': gst, 'total_price': total_price})
 
 
-def booking_list(request):
-    bookings = Booking.objects.all()
-    return render(request, 'booking_list.html', {'bookings': bookings})
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
+from io import BytesIO
+from django.http import HttpResponse
+from datetime import datetime, timedelta
+from django.utils import timezone
+from django.utils.timezone import make_aware
+from .models import Booking
+from decimal import Decimal
 
 def generate_pdf(request):
-    bookings = Booking.objects.all()  # You may need to filter bookings as per your requirements
+    # Check if a date range is provided in the request
+    checkin_datetime = request.GET.get('checkin_datetime', '')
+    checkout_datetime = request.GET.get('checkout_datetime', '')
+
+    # Default to the last 30 days if no date range is provided
+    if not checkin_datetime or not checkout_datetime:
+        checkout_datetime = timezone.now()
+        checkin_datetime = checkout_datetime - timedelta(days=30)
+    else:
+        checkin_datetime = make_aware(datetime.strptime(checkin_datetime, '%Y-%m-%d'))
+        checkout_datetime = make_aware(datetime.strptime(checkout_datetime, '%Y-%m-%d'))
+
+    # Filter bookings based on the provided date range
+    bookings = Booking.objects.filter(checkin_datetime__range=(checkin_datetime, checkout_datetime))
+
     buffer = BytesIO()
 
     # Create PDF document
     doc = SimpleDocTemplate(buffer, pagesize=letter)
     elements = []
 
+    styles = getSampleStyleSheet()
+    normal_style = styles["Normal"]
+
+    # Add title to the PDF
+    title_text = f"Booking List ({checkin_datetime.date()} to {checkout_datetime.date()})"
+    elements.append(Paragraph(title_text, styles["Title"]))
+    elements.append(Paragraph("<br/><br/>", normal_style))  # Add some space
+
     # Define data for the table
-    data = [['Name', 'Address', 'Phone', 'Aadhar', 'Price', 'gst', 'total_price']]
+    data = [['ID','Name', 'Phone', 'Aadhar', 'Price', 'GST', 'Total Price', 'Rooms']]
+
+    total_revenue = Decimal('0.00')
 
     for booking in bookings:
+        # Calculate GST and total price
         price = booking.price
-        gst = price * Decimal('0.18')
+        gst = price * Decimal('0.12')
         total_price = price + gst
 
+        # Collect room details for the booking
+        room_details = ", ".join([room.room_number for room in booking.rooms.all()])
+
+        # Append booking details to the data list
         data.append([
+            booking.id,
             booking.name,
-            booking.address,
+
             booking.phone,
             booking.aadhar,
             price,
             gst,
-            total_price
-            
+            total_price,
+
+            room_details,
         ])
+
+        # Increment total revenue
+        total_revenue += price
+
+    # Add row for total revenue
+    data.append(['', '', '', '', '', '', f'Total Revenue: {total_revenue}', '', '', ''])
 
     # Create the table
     table = Table(data)
 
-    # Add style to table
-    style = TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                        ('GRID', (0, 0), (-1, -1), 1, colors.black)])
+    # Define style for the table
+    style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ])
 
+    # Apply style to the table
     table.setStyle(style)
     elements.append(table)
 
@@ -183,13 +261,15 @@ def generate_pdf(request):
 
     return response
 
+
+
 def generate_bill(request, booking_id):
     # Retrieve booking object
     booking = get_object_or_404(Booking, id=booking_id)
 
     # Calculate GST and total price
     price = booking.price
-    gst = price * Decimal('0.18')
+    gst = price * Decimal('0.12')
     total_price = price + gst
 
     # Create a buffer for the PDF
@@ -248,42 +328,53 @@ def generate_bill(request, booking_id):
     response['Content-Disposition'] = f'attachment; filename="booking_bill_{booking.id}.pdf"'
     return response
 
-from django.db.models import Sum
-from decimal import Decimal
+from django.utils.timezone import make_aware
 
-def total_revenue(request):
-    # Get current date
-    current_date = datetime.now()
+def booking_list(request):
+    # Check if a date range is provided in the request
+    checkin_datetime = request.GET.get('checkin_datetime', '')
+    checkout_datetime = request.GET.get('checkout_datetime', '')
 
-    # Calculate start and end dates for week, month, and year
-    week_start_date = current_date - timedelta(days=current_date.weekday())
-    week_end_date = week_start_date + timedelta(days=6)
+    # Default to the last 30 days if no date range is provided
+    if not checkin_datetime or not checkout_datetime:
+        checkout_datetime = datetime.now()
+        checkin_datetime = checkout_datetime - timedelta(days=30)
+    else:
+        checkin_datetime = make_aware(datetime.strptime(checkin_datetime, '%Y-%m-%d'))
+        checkout_datetime = make_aware(datetime.strptime(checkout_datetime, '%Y-%m-%d'))
 
-    month_start_date = current_date.replace(day=1)
-    next_month = current_date.replace(day=28) + timedelta(days=4)
-    month_end_date = next_month - timedelta(days=next_month.day)
+    bookings = Booking.objects.filter(checkin_datetime__range=(checkin_datetime, checkout_datetime))
 
-    year_start_date = current_date.replace(month=1, day=1)
-    year_end_date = current_date.replace(month=12, day=31)
+    # Calculate total revenue for the given date range
+    total_revenue = bookings.aggregate(Sum('price'))['price__sum']
 
-    # Calculate total revenue for the week, month, and year
-    bookings_week = Booking.objects.filter(
-        checkout_datetime__range=[week_start_date, week_end_date]
-    )
-    total_revenue_week = sum(booking.price for booking in bookings_week)
+    # Prepare a list to hold each booking along with its details
+    bookings_with_details = []
 
-    bookings_month = Booking.objects.filter(
-        checkout_datetime__range=[month_start_date, month_end_date]
-    )
-    total_revenue_month = sum(booking.price for booking in bookings_month)
+    for booking in bookings:
+        # Calculate GST for the booking
+        price = float(booking.price)
+        gst = price * 0.12
 
-    bookings_year = Booking.objects.filter(
-        checkout_datetime__range=[year_start_date, year_end_date]
-    )
-    total_revenue_year = sum(booking.price for booking in bookings_year)
+        # Collect room details for the booking
+        room_details = ", ".join([room.room_number for room in booking.rooms.all()])
 
-    return render(request, 'total_revenue.html', {
-        'total_revenue_week': total_revenue_week,
-        'total_revenue_month': total_revenue_month,
-        'total_revenue_year': total_revenue_year,
+        # Construct a dictionary with booking details
+        booking_details = {
+            'booking': booking,
+            'checkin_datetime': booking.checkin_datetime,
+            'checkout_datetime': booking.checkout_datetime,
+            'price': price,
+            'gst': gst,
+            'total_price': price + gst,
+            'rooms': room_details,
+        }
+
+        bookings_with_details.append(booking_details)
+
+    return render(request, 'booking_list.html', {
+        'bookings': bookings_with_details,
+        'checkin_datetime': checkin_datetime,
+        'checkout_datetime': checkout_datetime,
+        'total_revenue': total_revenue,
     })
